@@ -183,10 +183,6 @@ int APIENTRY WinMain(HINSTANCE hInstance,
      * Set env variables in the current process.  It'll get inherited by
      * node process.
      */
-    if (!SetEnvironmentVariableA("PROJ_LIB",".\\tilemill\\data\\proj\\nad"))
-        ErrorExit("TileMill.exe setting env: ",GetLastError());
-    if (!SetEnvironmentVariableA("GDAL_DATA",".\\tilemill\\data\\gdal\\data"))
-        ErrorExit("TileMill.exe setting env: ",GetLastError());
     if (!SetEnvironmentVariableA("PATH",".\\tilemill\\addons\\mapnik\\lib\\mapnik\\lib;.\\tilemill\\addons\\zipfile\\lib;%PATH%"))
         ErrorExit("TileMill.exe setting env: ",GetLastError());
     if (!SetEnvironmentVariableA("NODE_PATH",".\\tilemill\\addons"))
