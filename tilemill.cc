@@ -71,10 +71,14 @@ void ReadFromPipe(void)
     if (!CloseHandle(g_hChildStd_OUT_Wr))
         ErrorExit(TEXT("StdOutWr CloseHandle"));
 
+    bool fatal = false;
     for (;;)
     {
         bSuccess = ReadFile( g_hChildStd_OUT_Rd, chBuf, BUFSIZE, &dwRead, NULL);
-        if( ! bSuccess ) break;
+        if(!bSuccess )
+        {
+            break;
+        }
         std::string debug_line(chBuf);
         std::string substring = debug_line.substr(0,static_cast<size_t>(dwRead));
         substring += "\nPlease report this to https://github.com/mapbox/tilemill/issues\n";
@@ -82,18 +86,25 @@ void ReadFromPipe(void)
         {
             if (substring.find("EADDRINUSE") !=std::string::npos)
             {
-                MessageBox(NULL, static_cast<LPCSTR>("TileMill port already in use. Please quit the other application using port 20009 and then restart TileMill"), TEXT("TileMill Error"), MB_OK|MB_SYSTEMMODAL);
+                MessageBox(NULL, static_cast<LPCSTR>("TileMill appears to already be running. If you have another TileMill instance open please close it. If not then you may have 'runaway' processes (see http://tilemill.com/docs/troubleshooting/ for help)"), TEXT("TileMill Error"), MB_OK|MB_SYSTEMMODAL);
             }
             else
             {
                 MessageBox(NULL, static_cast<LPCSTR>(substring.c_str()), TEXT("TileMill Error"), MB_OK|MB_SYSTEMMODAL);
             }
-            ExitProcess(1);
+            fatal = true;
         }
         bSuccess = WriteFile(g_hInputFile, chBuf,
                              dwRead, &dwWritten, NULL);
-        if (! bSuccess ) break;
-
+        if (!bSuccess)
+        {
+            break;
+        }
+    }
+    if (fatal)
+    {
+        writeToLog("Exiting TileMill due to fatal error...\n");
+        ExitProcess(1);
     }
 }
 
@@ -128,7 +139,7 @@ void CreateChildProcess(TCHAR * szCmdline)
                              &siStartInfo,  // STARTUPINFO pointer
                              &piProcInfo);  // receives PROCESS_INFORMATION
 
-    if ( ! bSuccess )
+    if (!bSuccess)
     {
         ErrorExit(TEXT("Could not launch TileMill's node process"));
     }
@@ -137,7 +148,6 @@ void CreateChildProcess(TCHAR * szCmdline)
         // Close handles to the child process and its primary thread.
         // Some applications might keep these handles to monitor the status
         // of the child process, for example.
-
         CloseHandle(piProcInfo.hProcess);
         CloseHandle(piProcInfo.hThread);
     }
@@ -160,37 +170,43 @@ int APIENTRY WinMain(HINSTANCE hInstance,
                      int       nCmdShow) {
 
     if (!FileExists("tilemill\\node.exe") && !FileExists("tilemill\\node_modules"))
+    {
         msgExit(TEXT("Could not start: TileMill.exe could not find supporting files"));
+    }
     
     SECURITY_ATTRIBUTES saAttr;
     saAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
     saAttr.bInheritHandle = TRUE;
     saAttr.lpSecurityDescriptor = NULL;
 
-    if ( ! CreatePipe(&g_hChildStd_OUT_Rd, &g_hChildStd_OUT_Wr, &saAttr, 0) )
+    if (! CreatePipe(&g_hChildStd_OUT_Rd, &g_hChildStd_OUT_Wr, &saAttr, 0) )
+    {
         ErrorExit(TEXT("could not create pipe to stdout"));
+    }
 
-    if ( ! SetHandleInformation(g_hChildStd_OUT_Rd, HANDLE_FLAG_INHERIT, 0) )
+    if (! SetHandleInformation(g_hChildStd_OUT_Rd, HANDLE_FLAG_INHERIT, 0) )
+    {
         ErrorExit(TEXT("could not get stdout handle info"));
+    }
 
     if (! CreatePipe(&g_hChildStd_IN_Rd, &g_hChildStd_IN_Wr, &saAttr, 0))
+    {
         ErrorExit(TEXT("could not create pipe to stdin"));
+    }
 
-    if ( ! SetHandleInformation(g_hChildStd_IN_Wr, HANDLE_FLAG_INHERIT, 0) )
+    if (! SetHandleInformation(g_hChildStd_IN_Wr, HANDLE_FLAG_INHERIT, 0) )
+    {
         ErrorExit(TEXT("could not get stdin handle info"));
+    }
 
     /*
      * Set env variables in the current process.  It'll get inherited by
      * node process.
      */
-    //if (!SetEnvironmentVariableA("PROJ_LIB",".\\tilemill\\data\\proj\\nad"))
-    //    ErrorExit("TileMill.exe setting env: ",GetLastError());
-    //if (!SetEnvironmentVariableA("GDAL_DATA",".\\tilemill\\data\\gdal\\data"))
-    //    ErrorExit("TileMill.exe setting env: ",GetLastError());
     if (!SetEnvironmentVariableA("PATH",".\\tilemill\\node_modules\\mapnik\\lib\\mapnik\\lib;.\\tilemill\\node_modules\\zipfile\\lib;%PATH%"))
+    {
         ErrorExit("TileMill.exe setting env: ",GetLastError());
-    //if (!SetEnvironmentVariableA("NODE_PATH",".\\tilemill\\addons"))
-    //    ErrorExit("TileMill.exe setting env: ",GetLastError());
+    }
 
     // Create the child process.
     TCHAR cmd[]=TEXT(".\\tilemill\\node.exe .\\tilemill\\index.js");
@@ -233,7 +249,7 @@ int APIENTRY WinMain(HINSTANCE hInstance,
     {
         std::string err_msg("Could not create the TileMill log file at: '");
         err_msg += logpath;
-        err_msg += "'";
+        err_msg += "' (is another instance of TileMill already running?)";
         LPTSTR l_msg = (LPTSTR)(err_msg.c_str());
         ErrorExit(l_msg);
     }
