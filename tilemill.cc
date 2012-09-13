@@ -82,7 +82,10 @@ void ReadFromPipe(void)
         std::string debug_line(chBuf);
         std::string substring = debug_line.substr(0,static_cast<size_t>(dwRead));
         substring += "\nPlease report this to https://github.com/mapbox/tilemill/issues\n";
-        if (substring.find("Error:") !=std::string::npos)
+        if (!fatal &&
+            (substring.find("Client Error:") == std::string::npos) &&
+            ((substring.find("throw e; // process") != std::string::npos) || (substring.find("Error:") != std::string::npos))
+           )
         {
             if (substring.find("EADDRINUSE") !=std::string::npos)
             {
