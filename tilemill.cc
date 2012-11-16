@@ -84,7 +84,7 @@ void ReadFromPipe(void)
         substring += "\nPlease report this to https://github.com/mapbox/tilemill/issues\n";
         if (!fatal &&
             (substring.find("Client Error:") == std::string::npos) &&
-            ((substring.find("throw e; // process") != std::string::npos) || (substring.find("Error:") != std::string::npos))
+            ((substring.find("throw e; // process") != std::string::npos) || (substring.find("EADDRINUSE") !=std::string::npos))
            )
         {
             if (substring.find("EADDRINUSE") !=std::string::npos)
