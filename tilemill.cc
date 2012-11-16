@@ -203,13 +203,19 @@ int APIENTRY WinMain(HINSTANCE hInstance,
     }
 
     /*
-     * Set env variables in the current process.  It'll get inherited by
-     * node process.
+     * Clear out the PATH environment so avoid potential dll problems if system has duplicates
+	 * The PATH should be set by the node ./index.js file as it starts up
      */
-    if (!SetEnvironmentVariableA("PATH",".\\tilemill\\node_modules\\mapnik\\lib\\mapnik\\lib;.\\tilemill\\node_modules\\zipfile\\lib;%PATH%"))
+    if (!SetEnvironmentVariableA("PATH",NULL))
     {
-        ErrorExit("TileMill.exe setting env: ",GetLastError());
+        ErrorExit("TileMill.exe clearing env: ",GetLastError());
     }
+	char* env = ::GetEnvironmentStrings();
+	if (0 != env) {
+	    std::string senv = env;
+		std::string msg = std::string("TileMill PATH env: ") + senv;
+		writeToLog(msg.c_str());
+	}
 
     // Create the child process.
     TCHAR cmd[]=TEXT(".\\tilemill\\node.exe .\\tilemill\\index.js");
