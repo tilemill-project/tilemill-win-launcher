@@ -23,6 +23,8 @@
             'BUILDING_NODE_EXTENSION'
           ],
           'libraries': [
+            '-luser32.lib', # MessageBox
+            '-lshell32.lib', # GetSpecialFolderPath
           ],
           'include_dirs': [
           ],
