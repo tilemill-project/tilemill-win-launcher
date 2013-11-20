@@ -32,7 +32,7 @@ void ErrorExit(LPTSTR lpszFunction, DWORD dw)
                                       (lstrlen((LPCTSTR)lpMsgBuf) + lstrlen((LPCTSTR)lpszFunction) + 100) * sizeof(TCHAR));
     StringCchPrintf((LPTSTR)lpDisplayBuf,
                     LocalSize(lpDisplayBuf) / sizeof(TCHAR),
-                    TEXT("%s\n\n Failed with error %d: %s\nPlease report this problem to https://github.com/mapbox/tilemill/issues"),
+                    TEXT("%s\n\n Failed with error %d: %s\n\nCopy this error with ctrl-c"),
                     lpszFunction, dw, lpMsgBuf);
     MessageBox(NULL, (LPCTSTR)lpDisplayBuf, TEXT("TileMill Error"), MB_OK|MB_SYSTEMMODAL);
 
@@ -81,15 +81,15 @@ void ReadFromPipe(void)
         }
         std::string debug_line(chBuf);
         std::string substring = debug_line.substr(0,static_cast<size_t>(dwRead));
-        substring += "\nPlease report this to https://github.com/mapbox/tilemill/issues\n";
+        substring += "\nPlease report this to https://github.com/mapbox/tilemill/issues\n\nCopy this error with ctrl-c";
         if (!fatal &&
             (substring.find("Client Error:") == std::string::npos) &&
-            ((substring.find("throw e; // process") != std::string::npos) || (substring.find("EADDRINUSE") !=std::string::npos))
+            ((substring.find("Error:") != std::string::npos) || (substring.find("EADDRINUSE") !=std::string::npos))
            )
         {
             if (substring.find("EADDRINUSE") !=std::string::npos)
             {
-                MessageBox(NULL, static_cast<LPCSTR>("TileMill appears to already be running. If you have another TileMill instance open please close it. If not then you may have 'runaway' processes (see http://tilemill.com/docs/troubleshooting/ for help)"), TEXT("TileMill Error"), MB_OK|MB_SYSTEMMODAL);
+                MessageBox(NULL, static_cast<LPCSTR>("TileMill appears to already be running. If you have another TileMill instance open please close it. If not then you may have a 'runaway' process (see https://mapbox.com/tilemill/docs/troubleshooting/ for help)"), TEXT("TileMill Error"), MB_OK|MB_SYSTEMMODAL);
             }
             else
             {
@@ -256,9 +256,9 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 
     if ( g_hInputFile == INVALID_HANDLE_VALUE )
     {
-        std::string err_msg("Could not create the TileMill log file at: '");
+        std::string err_msg("Could not create the TileMill log file at: \n\n'");
         err_msg += logpath;
-        err_msg += "' (is another instance of TileMill already running?)";
+        err_msg += "'\n\nIs another instance of TileMill already running? If not then you may have a 'runaway' process (see https://mapbox.com/tilemill/docs/troubleshooting/ for help)";
         LPTSTR l_msg = (LPTSTR)(err_msg.c_str());
         ErrorExit(l_msg);
     }
