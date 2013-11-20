@@ -262,7 +262,36 @@ int APIENTRY WinMain(HINSTANCE hInstance,
         LPTSTR l_msg = (LPTSTR)(err_msg.c_str());
         ErrorExit(l_msg);
     }
-
+	
+	LARGE_INTEGER DataTemp;
+	if (!GetFileSizeEx(g_hInputFile,&DataTemp))
+	{
+	    ErrorExit("TileMill.exe checking log size: ");
+	}
+	if (DataTemp.QuadPart > 5242880) // 5 MB
+	{
+	    if (!CloseHandle(g_hInputFile))
+		{
+    	    ErrorExit("TileMill.exe failed to close log file: ");
+		}
+         g_hInputFile = CreateFile(
+            logpath.c_str(),
+            GENERIC_WRITE,
+            FILE_SHARE_READ,
+            NULL,
+            TRUNCATE_EXISTING,
+            FILE_ATTRIBUTE_NORMAL,
+            NULL);
+        if ( g_hInputFile == INVALID_HANDLE_VALUE )
+        {
+            std::string err_msg("Failed to clear and re-open the TileMill log file at: \n\n'");
+            err_msg += logpath;
+            err_msg += "'\n\nIs another instance of TileMill already running? If not then you may have a 'runaway' process (see https://mapbox.com/tilemill/docs/troubleshooting/ for help)";
+            LPTSTR l_msg = (LPTSTR)(err_msg.c_str());
+            ErrorExit(l_msg);
+        }
+		
+	}
     writeToLog("Starting TileMill...\n");
     ReadFromPipe();
     return 0;
