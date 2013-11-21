@@ -294,5 +294,6 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	}
     writeToLog("Starting TileMill...\n");
     ReadFromPipe();
+	CloseHandle(g_hInputFile);
     return 0;
 }
