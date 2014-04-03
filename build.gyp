@@ -21,7 +21,7 @@
             '_LARGEFILE_SOURCE',
             '_FILE_OFFSET_BITS=64',
             '_WINDOWS',
-            'UNICODE=1'
+            'BUILDING_NODE_EXTENSION'
           ],
           'libraries': [
             '-luser32.lib', # MessageBox
