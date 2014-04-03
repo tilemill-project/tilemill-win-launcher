@@ -203,7 +203,7 @@ int APIENTRY WinMain(HINSTANCE hInstance,
     }
 
     /*
-     * Clear out the PATH environment so avoid potential dll problems if system has duplicates
+     * Clear out the PATH environment to avoid potential dll problems if system has duplicates
 	 * The PATH should be set by the node ./index.js file as it starts up
      */
     if (!SetEnvironmentVariableA("PATH",NULL))
