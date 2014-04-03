@@ -9,6 +9,7 @@
       'product_extension':'exe',
       'sources': [
         'tilemill.cc',
+        'tilemill.rc'
       ],
       'defines': [
         'PLATFORM="<(OS)"',
@@ -20,7 +21,7 @@
             '_LARGEFILE_SOURCE',
             '_FILE_OFFSET_BITS=64',
             '_WINDOWS',
-            'BUILDING_NODE_EXTENSION'
+            'UNICODE=1'
           ],
           'libraries': [
             '-luser32.lib', # MessageBox
@@ -30,18 +31,18 @@
           ],
           'msvs_settings': {
             'VCLinkerTool': {
-			  'target_conditions': [
-			     ['_type=="executable"', {
+              'target_conditions': [
+                 ['_type=="executable"', {
                      'SubSystem': 2,
-				 }],
-			  ],
+                 }],
+              ],
               'AdditionalLibraryDirectories': [
               ],
             },
-			'VCResourceCompilerTool' : {
-			      'PreprocessorDefinitions': ["_WINDOWS"]
-			},
-			},
+            'VCResourceCompilerTool' : {
+                  'PreprocessorDefinitions': ["_WINDOWS"]
+            },
+            },
         },
       ], # windows
       ] # condition
